@@ -3,8 +3,8 @@ import json
 import os.path
 from typing import Type, Any
 
-from src.tinyjsondb.errors import *
-from src.tinyjsondb.fields import BaseField, AutoField
+from .errors import *
+from .fields import BaseField, AutoField
 from tempfile import NamedTemporaryFile
 from pathlib import Path
 import portalocker
@@ -96,7 +96,7 @@ class Manager:
 
     def _update(self, data, obj: Model):
         pk = str(obj.pk())
-        print(data, "9000")
+        # print(data, "9000")
         for k, v in obj.__dict__.items():
             data[pk][k] = v
         self._insert(data)
@@ -111,15 +111,15 @@ class Manager:
 
 
     def _extract(self) -> dict[str, dict]:
-        with open(self.model.path_to_file, 'r') as file:
+        with open(self.model.path_to_file, 'r', encoding='utf-8') as file:
             return json.load(file)
 
     def _insert(self, data: dict[str, dict]):
         with portalocker.Lock(self.model.path_to_file + ".lock", timeout=10):
             with NamedTemporaryFile("w", dir=Path(self.model.path_to_file).parent,
-                                    delete=False) as tmp:
+                                    delete=False, encoding="utf-8") as tmp:
                 json.dump(data, tmp, ensure_ascii=False, indent=4)
-                tmp.flush();
+                tmp.flush()
                 os.fsync(tmp.fileno())
             os.replace(tmp.name, self.model.path_to_file)
 

@@ -1,47 +1,84 @@
 # tinyjsondb
 
-tinyjsondb is a tiny, JSON-backed, embedded database with an ORM-like API.  
-It stores each model in a single `.json` file and provides CRUD operations through familiar Django-style managers.
-
----
-
-## Requirements
-* Python ≥ 3.8  
-* [portalocker](https://pypi.org/project/portalocker/) (for cross-platform file locking)
-
----
+tinyjsondb is a minimal Python ORM for working with JSON files as a simple database.
+It allows defining models with typed fields, creating, reading, updating, and deleting records, all stored in JSON.
 
 ## Installation
 
-install latest commit from GitHub
 ```bash
-pip install git+https://github.com/Waland2/tinyjsondb.git
+pip install tinyjsondb
 ```
 
+or from source:
 
-## Quick start
+```bash
+git clone https://github.com/Waland2/tinyjsondb.git
+cd tinyjsondb
+pip install .
+```
+
+## Quick Start
+
 ```python
-from tinyjsondb import Model, IntegerField, StringField
+from tinyjsondb import Model, IntegerField, StringField, ListField
 
 class User(Model):
-    path_to_file = "users.json" # store data in users.json
-    age  = IntegerField()
     name = StringField(default="Anonymous")
+    hobbies = ListField(default=[])
 
-User.sync()  # create or migrate the file
+# Initialize the storage file and sync schema
+User.sync()
 
-# create
-alice = User.objects.create(age=24, name="Alice")
+# Create a record
+User.objects.create(name="Alice", hobbies=["reading"])
 
-# read
-bob = User.objects.get(age=24)
+# Get a record
+user = User.objects.get(id=1)
+print(user.name)  # Alice
 
-# update
-bob.update(name="Bob")
+# Update a record
+user.update(name="Alice Wonderland")
 
-# delete
-bob.delete()
+# Delete a record
+user.delete()
+user = User.objects.get(id=1)
+print(user is None)  # True
+
+# Get all records
+users = User.objects.all()
 ```
 
-License
-MIT © 2025 Waland2
+## Overview
+
+**Model methods:**
+
+* `sync()` - create or update the JSON file with data.
+* `save()` - insert or update the record.
+* `update(**kwargs)` - update fields and save.
+* `delete()` - remove the record.
+* `pk()` - return the primary key value.
+
+**Manager methods (`Model.objects`):**
+
+* `create(**kwargs)` - insert a new record.
+* `get(**kwargs)` - return the first matching record or `None`.
+* `get_or_create(**kwargs)` - return an existing record or create it.
+* `all()` - return all records.
+* `update(obj)` - update an existing record.
+* `delete(**kwargs)` - remove a record by field values.
+* `clear()` - remove all records.
+
+### Field types
+
+* `IntegerField()` - integer field.
+* `StringField()` - string field.
+* `ListField()` - list field.
+* `DictField()` - dictionary field.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE.md).
+
+
+
+
